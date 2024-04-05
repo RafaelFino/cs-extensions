@@ -5,33 +5,40 @@ using Extensions.Utils;
 var logger = new Logger();
 var ctxFactory = new ContextFactory(logger);
 
-try
+using (var ctx = ctxFactory.Create("Main"))
 {
-    using (var ctx = ctxFactory.Create("Main"))
+    logger.Info($"Starting main process {Environment.NewLine}");
+
+    for (int i = 0; i < 10; i++)
     {
-        logger.Info($"Starting main process {Environment.NewLine}");
+        logger.Info($"[{i}] Starting iteration");
 
-        for(int i=0; i < 10; i++)
+        using (var ctx1 = ctxFactory.Create("Function1"))
         {
-            logger.Info($"[{i}] Starting iteration");
-
-            using (var ctx1 = ctxFactory.Create("Function1"))
+            try
             {
-                logger.Info($"[{i}] Doing some work with 100ms delay");    
+                logger.Info($"[{i}] Doing some work with 100ms delay");
                 Thread.Sleep(100);
             }
-
-            using (var ctx2 = ctxFactory.Create("Function2"))
+            catch (Exception ex)
             {
-                logger.Info($"[{i}] Doing other some work with 200ms delay..");  
-                Thread.Sleep(200);
+                ctx1.OnError(ex.Message);
             }
-
-            logger.Info($"[{i}] Ending iteration{Environment.NewLine}");
         }
+
+        using (var ctx2 = ctxFactory.Create("Function2"))
+        {
+            try
+            {
+                logger.Info($"[{i}] Doing some work with 300ms delay");
+                Thread.Sleep(300);
+            }
+            catch (Exception ex)
+            {
+                ctx2.OnError(ex.Message);
+            }
+        }
+
+        logger.Info($"[{i}] Ending iteration{Environment.NewLine}");
     }
-}
-catch(Exception ex)
-{
-    logger.Error(ex.Message);
 }
