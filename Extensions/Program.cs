@@ -9,7 +9,7 @@ try
 {
     using (var ctx = ctxFactory.Create("Main"))
     {
-        logger.Info("Starting main process {Environment.NewLine}");
+        logger.Info($"Starting main process {Environment.NewLine}");
 
         for(int i=0; i < 10; i++)
         {
